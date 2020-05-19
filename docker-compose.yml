@@ -1,0 +1,49 @@
+version: '3'
+services:
+
+    redis:
+        image: 'redis'
+        restart: always
+
+    auth_postgres:
+        image: postgres
+        restart: always
+        environment:
+            # Use Docker secrets for production
+            POSTGRES_PASSWORD: Password123
+
+    secrets_postgres:
+        image: postgres
+        restart: always
+        environment:
+            # Use Docker secrets for production
+            POSTGRES_PASSWORD: Password321
+
+    secrets_microservice:
+        build:
+            context: .
+            dockerfile: Dockerfile.secrets
+        restart: always
+        volumes:
+            - /usr/app/node_modules
+            - ./secrets_microservice:/usr/app/
+    
+    auth_microservice:
+        build:
+            context: .
+            dockerfile: Dockerfile.auth
+        restart: always
+        volumes:
+            - /usr/app/node_modules
+            - ./auth_microservice:/usr/app/
+
+    router_microservice:
+        build:
+            context: .
+            dockerfile: Dockerfile.router
+        restart: always
+        ports:
+            - 3000:3000
+        volumes:
+            - /usr/app/node_modules
+            - ./router_microservice:/usr/app/
